@@ -1,0 +1,32 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    restart: always
+    environment:
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - CLICKHOUSE_DB={{ clickhouse.database }}
+      - CLICKHOUSE_USER={{ clickhouse.user }}
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_PASSWORD={{ clickhouse.password }}
+      - CLICKHOUSE_ADMIN_PASSWORD={{ clickhouse.password }}
+    ports:
+      - '8123:8123'
+      - '9000:9000'
+    volumes:
+      - ./clickhouse:/var/lib/clickhouse
+
+  nginx_server:
+    build:
+      context: ../docker
+      dockerfile: nginx/Dockerfile
+    restart: always
+    volumes:
+      - ../outputs/nginx.conf:/etc/nginx/nginx.conf
+      - ../outputs/nginx_conf.d:/etc/nginx/conf.d
+      - ../outputs/vector.toml:/etc/vector/vector.toml
+    ports:
+      - "{{ nginx.port }}:80"
+    links:
+      - clickhouse
+    depends_on:
+      - clickhouse
