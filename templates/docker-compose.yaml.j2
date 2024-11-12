@@ -10,7 +10,7 @@ services:
       - CLICKHOUSE_PASSWORD={{ clickhouse.password }}
       - CLICKHOUSE_ADMIN_PASSWORD={{ clickhouse.password }}
     ports:
-      - '8123:8123'
+      - '{{ clickhouse.port }}:8123'
       - '9000:9000'
     volumes:
       - ./clickhouse:/var/lib/clickhouse

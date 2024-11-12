@@ -46,7 +46,7 @@
 [sinks.clickhouse]
   type = "clickhouse"
   inputs = ["nginx_logs_parser"]
-  endpoint = "http://clickhouse:8123"
+  endpoint = "http://clickhouse:{{ clickhouse.port }}"
   table = "nginx_logs"
   database = "{{ clickhouse.database }}"
   compression = "none"
