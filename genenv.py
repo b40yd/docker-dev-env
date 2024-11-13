@@ -1,8 +1,8 @@
 import toml
 import os
 from typer import Typer
-from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, Field, field_validator
+from jinja2 import Environment, FileSystemLoader, Template
+from pydantic import BaseModel, Field
 from typing import Optional
 
 app = Typer()
@@ -27,14 +27,30 @@ class Config(BaseModel):
     nginx: NginxConfig
     clickhouse: ClickhouseConfig
 
+def generate_nginx_server():
+    server = '''
+server {
+    listen 80;
+
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+    }
+}
+'''
+    return Template(server)
+
 @app.command(name="gvnc", help="generate vector nginx clickhouse config file.")
-def generate_vector_nginx_clickhouse(config: str = './config.toml', template_dir: str = './templates', outputs: str = "outputs"):
+def generate_vector_nginx_clickhouse(config: str = './config.toml', template_dir: str = './templates/vector-nginx-clickhouse', outputs: str = "outputs"):
     with open(config, 'r') as file:
         config_obj = Config(**toml.load(file))
+
+    template_dir = template_dir.rstrip('/')
     
     templates = {
         'docker-compose.yaml': env.get_template(f'{template_dir}/docker-compose.yaml.j2'),
         'nginx.conf': env.get_template(f'{template_dir}/nginx.conf.j2'),
+        'nginx_conf.d/default.conf': generate_nginx_server(),
         'vector.toml': env.get_template(f'{template_dir}/vector.toml.j2')
     }
     
