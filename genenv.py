@@ -41,26 +41,32 @@ server {
     return Template(server)
 
 @app.command(name="gvnc", help="generate vector nginx clickhouse config file.")
-def generate_vector_nginx_clickhouse(config: str = './config.toml', template_dir: str = './templates/vector-nginx-clickhouse', outputs: str = "outputs"):
+def generate_vector_nginx_clickhouse(config: str = './config.toml', template_dir: str = './templates', outputs: str = "outputs/vector-nginx-clickhouse"):
     with open(config, 'r') as file:
         config_obj = Config(**toml.load(file))
 
     template_dir = template_dir.rstrip('/')
     
     templates = {
-        'docker-compose.yaml': env.get_template(f'{template_dir}/docker-compose.yaml.j2'),
-        'nginx.conf': env.get_template(f'{template_dir}/nginx.conf.j2'),
+        'docker/nginx_vector/Dockerfile': env.get_template(f'{template_dir}/docker/nginx_vector/Dockerfile.j2'),
+        'docker/nginx_vector/entrypoint.sh': env.get_template(f'{template_dir}/docker/nginx_vector/entrypoint.sh.j2'),
+        'docker/repos/debian.list': env.get_template(f'{template_dir}/docker/repos/debian.list.j2'),
+        'docker-compose.yaml': env.get_template(f'{template_dir}/vector-nginx-clickhouse/docker-compose.yaml.j2'),
+        'nginx.conf': env.get_template(f'{template_dir}/vector-nginx-clickhouse/nginx.conf.j2'),
         'nginx_conf.d/default.conf': generate_nginx_server(),
-        'vector.toml': env.get_template(f'{template_dir}/vector.toml.j2')
+        'vector.toml': env.get_template(f'{template_dir}/vector-nginx-clickhouse/vector.toml.j2')
     }
     
     for name, template in templates.items():
         output = template.render(config_obj)
-        if not os.path.exists(outputs):
-            os.mkdir(outputs)
+        file = f"{outputs}/{name}"
+        file_dir = os.path.dirname(file)
+        if not os.path.isdir(file_dir):
+            os.makedirs(file_dir, exist_ok=True)
 
-        with open(f'{outputs}/{name}', 'w') as file:
+        with open(file, 'w') as file:
             file.write(output)
+
 
 @app.command(name="gc", help="generate config.")
 def generate_config(nginx_port=8888, 

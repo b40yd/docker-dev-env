@@ -17,13 +17,13 @@ services:
 
   nginx_server:
     build:
-      context: ../docker
-      dockerfile: nginx/Dockerfile
+      context: .
+      dockerfile: docker/nginx_vector/Dockerfile
     restart: always
     volumes:
-      - ../outputs/nginx.conf:/etc/nginx/nginx.conf
-      - ../outputs/nginx_conf.d:/etc/nginx/conf.d
-      - ../outputs/vector.toml:/etc/vector/vector.toml
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx_conf.d:/etc/nginx/conf.d
+      - ./vector.toml:/etc/vector/vector.toml
     ports:
       - "{{ nginx.port }}:80"
     links:
