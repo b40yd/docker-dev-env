@@ -6,3 +6,6 @@ RUN apt-get install -y curl procps net-tools vim
 RUN bash -c "$(curl -L https://setup.vector.dev)"
 RUN apt-get install -y vector
 RUN rm -rf /var/log/nginx/*.log
+COPY ../nginx/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
